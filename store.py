@@ -104,9 +104,51 @@ def load_categories():
         with connection.cursor() as cursor:
             sql = 'SELECT * from categories'
             cursor.execute(sql)
-            response = cursor.fetchall()
+            result = cursor.fetchall()
+            response = {
+                'STATUS': 'SUCCESS',
+                'MSG': '',
+                'CATEGORIES': result,
+                'CODE': 200
+                }
             return json.dumps(response)
+    except:
+        response = {
+            'STATUS': 'ERROR',
+            'MSG': 'internal error',
+            'CODE': 500
+        }
+        return json.dumps(response)
+
+
+@post("/product")
+def add_product():
+    try:
         return
+    except:
+        return
+
+
+@get("/product/<pid>")
+def load_products(pid):
+    try:
+        with connection.cursor() as cursor:
+            sql = 'SELECT * FROM products'
+            cursor.execute(sql)
+            result = cursor.fetchall()
+            if not result:
+                response = {
+                    'STATUS': 'ERROR',
+                    'MSG': 'Product not found',
+                    'CODE': 404
+                }
+                return json.dumps(response)
+            response = {
+                'STATUS': 'SUCCESS',
+                'PRODUCT': result,
+                'CODE': 200
+            }
+        return json.dumps(response)
     except:
         response = {
             'STATUS': 'ERROR',
@@ -117,11 +159,36 @@ def load_categories():
 
 
 @route('/product/<pid>', method='DELETE')
-def delete_product():
+def delete_product(pid):
     try:
-        return
+        with connection.cursor() as cursor:
+            sql = 'SELECT * FROM products WHERE id = {}'.format(pid)
+            cursor.execute(sql)
+            connection.commit()
+            result = cursor.fetchall()
+            if result:
+                sql = 'DELETE FROM products WHERE id = {}'.format(pid)
+                cursor.execute(sql)
+                connection.commit()
+                response = {
+                    'STATUS': 'SUCCESS',
+                    'CODE': 201
+                }
+                return json.dumps(response)
+            else:
+                response = {
+                    'STATUS': 'ERROR',
+                    'MSG': 'Product not found',
+                    'CODE': 404
+                }
+                return json.dumps(response)
     except:
-        return
+        response = {
+            'STATUS': 'ERROR',
+            'MSG': 'internal error',
+            'CODE': 500
+        }
+        return json.dumps(response)
 
 
 @get("/products")
@@ -132,24 +199,9 @@ def show_products():
         return
 
 
-@get("/product/<pid>")
-def load_products():
-    try:
-        return
-    except:
-        return
-
 
 @get('/category/<id>/products')
 def list_products_cat():
-    try:
-        return
-    except:
-        return
-
-
-@post("/product")
-def add_product():
     try:
         return
     except:
