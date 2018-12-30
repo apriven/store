@@ -110,7 +110,7 @@ def load_categories():
                 'MSG': '',
                 'CATEGORIES': result,
                 'CODE': 200
-                }
+            }
             return json.dumps(response)
     except:
         response = {
@@ -123,10 +123,36 @@ def load_categories():
 
 @post("/product")
 def add_product():
-    try:
-        return
-    except:
-        return
+    id = request.POST.get('id')
+    cat_id = request.POST.get('category')
+    title = request.POST.get('title')
+    description = request.POST.get('desc')
+    price = request.POST.get('price')
+    favorite = request.POST.get('favorite')
+    if favorite is None:
+        n_fav = 0
+    else:
+        n_fav = 1
+    img_url = request.POST.get('img_url')
+    if cat_id != '':
+        try:
+            with connection.cursor() as cursor:
+                sql = 'UPDATE products SET cat_id=%s, title=%s, description=%s, price=%s, favorite=%s, img_url=%s WHERE id=%s'
+                data = (cat_id, str(title), str(description), price, n_fav, str(img_url), id)
+                cursor.execute(sql, data)
+                connection.commit()
+                response = {
+                    'STATUS': 'SUCCESS',
+                    'CODE': 201
+                }
+            return json.dumps(response)
+        except:
+            response = {
+                'STATUS': 'ERROR',
+                'MSG': 'internal error',
+                'CODE': 500
+            }
+            return json.dumps(response)
 
 
 @get("/product/<pid>")
@@ -211,7 +237,6 @@ def show_products():
             'CODE': 500
         }
         return json.dumps(response)
-
 
 
 @get('/category/<id>/products')
