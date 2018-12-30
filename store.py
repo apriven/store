@@ -194,18 +194,53 @@ def delete_product(pid):
 @get("/products")
 def show_products():
     try:
-        return
+        with connection.cursor() as cursor:
+            sql = 'SELECT * FROM products'
+            cursor.execute(sql)
+            result = cursor.fetchall()
+            response = {
+                'STATUS': 'SUCCESS',
+                'PRODUCTS': result,
+                'CODE': 200
+            }
+        return json.dumps(response)
     except:
-        return
+        response = {
+            'STATUS': 'ERROR',
+            'MSG': 'internal error',
+            'CODE': 500
+        }
+        return json.dumps(response)
 
 
 
 @get('/category/<id>/products')
-def list_products_cat():
+def list_products_cat(id):
     try:
-        return
+        with connection.cursor() as cursor:
+            sql = 'SELECT * FROM products WHERE cat_id = {} ORDER by favorite DESC'.format(id)
+            cursor.execute(sql)
+            result = cursor.fetchall()
+            if not result:
+                response = {
+                    'STATUS': 'ERROR',
+                    'MSG': 'Category not found',
+                    'ERROR': 404
+                }
+                return json.dumps(response)
+            response = {
+                'STATUS': 'SUCCESS',
+                'PRODUCTS': result,
+                'CODE': 200
+            }
+        return json.dumps(response)
     except:
-        return
+        response = {
+            'STATUS': 'ERROR',
+            'MSG': 'internal error',
+            'CODE': 500
+        }
+        return json.dumps(response)
 
 
 @get('/js/<filename:re:.*\.js>')
